@@ -62,6 +62,9 @@ FF_MODULE_DIRS="compat libavcodec libavfilter libavformat libavutil libswresampl
 FF_ASSEMBLER_SUB_DIRS=
 
 
+X264_PATH="$FF_BUILD_ROOT/../../../x264/"
+
+
 #--------------------
 echo ""
 echo "--------------------"
@@ -303,8 +306,13 @@ if [ -f "./config.h" ]; then
 else
     which $CC
     ./configure $FF_CFG_FLAGS \
+        --extra-cflags="-I$X264_PATH/android/arm/include" \
+        --extra-ldflags="-L$X264_PATH/android/arm/lib/"  \
         --extra-cflags="$FF_CFLAGS $FF_EXTRA_CFLAGS" \
-        --extra-ldflags="$FF_DEP_LIBS $FF_EXTRA_LDFLAGS"
+        --extra-ldflags="$FF_DEP_LIBS $FF_EXTRA_LDFLAGS" \
+        --extra-ldflags="-L$ANDROID_NDK/platforms/$FF_ANDROID_PLATFORM/arch-arm/usr/lib" \
+        --sysroot="$ANDROID_NDK/platforms/$FF_ANDROID_PLATFORM/arch-arm/" 
+
     make clean
 fi
 
@@ -345,6 +353,11 @@ do
         fi
     done
 done
+
+
+FF_DEP_LIBS="$FF_DEP_LIBS -L$X264_PATH/android/arm/lib/ -lx264"
+
+echo $FF_EXTRA_LDFLAGS
 
 $CC -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack $FF_EXTRA_LDFLAGS \
     -Wl,-soname,libijkffmpeg.so \
